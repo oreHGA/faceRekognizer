@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>🙎🏽 🙎🏽‍♂️ Rekognizer</title>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">    
+</head>
+<body class="container">
+    <div class="wrapper">
+
+        <div class="app-title">
+            <p>🙎🏽 🙎🏽‍♂️ Rekognizer</p>
+        </div>
+    
+        <!-- <ul class="nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="pills-upload-tab" data-toggle="pill" href="#pills-upload" role="tab" aria-controls="pills-upload" aria-selected="true">Upload</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-verify-tab" data-toggle="pill" href="#pills-verify" role="tab" aria-controls="pills-verify" aria-selected="false">Verify</a>
+            </li>
+        </ul> -->
+
+
+        <ul class="nav nav-pills nav-fill mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="pills-upload-tab" data-toggle="pill" href="#pills-upload" role="tab" aria-controls="pills-upload" aria-selected="true">Upload</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-verify-tab" data-toggle="pill" href="#pills-verify" role="tab" aria-controls="pills-verify" aria-selected="false">Verify</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="pills-tabContent">
+            <div class="tab-pane fade show active" id="pills-upload" role="tabpanel" aria-labelledby="pills-upload-tab">
+                <!-- core part for image upload to add image to kairo gallery -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <form enctype="multipart/form-data" @submit.prevent="onSubmit">
+                            <div class="form-group">
+                                <label for="">Name:</label>
+                                <input type="text" required class="form-control" placeholder="eg Ore" name="subject_name" v-model="model.name">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="">File:</label>
+                                <input type="file" class="form-control" accept="image/*" name="image" v-on:change="upload($event.target.files)">
+                            </div>
+
+                            <div class="form-group">
+                                <button class="btn btn-primary" >Upload</button>
+                                {{ loading }}
+                                {{ uploadStatus }}
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p style="text-align:center;">Image Preview</p>
+                        <div class="col-md-6" style="text-align:center;">
+                            <img id="originalface" class="img-responsive" alt="" width="200" height="200">
+                            <p style="text-align:center;">{{ model.name }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="pills-verify" role="tabpanel" aria-labelledby="pills-verify-tab">
+                <!-- core part for image upload to verify -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <form enctype="multipart/form-data" @submit.prevent="onSubmit">
+                            
+                            <div class="form-group">
+                                <label for="">Upload Picture of Person to Recognise:</label>
+                                <input type="file" class="form-control" accept="image/*" name="image" v-on:change="upload($event.target.files)">
+                            </div>
+                            
+                            <div class="form-group">
+                                <button class="btn btn-primary" >Rekognize</button>
+                                <span class="fa fa-spin fa-spinner" id="verify_spinner" style="display:none;" aria-hidden="true"></span>                            
+                                {{ loading }}
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <p style="text-align:center;">Image Preview</p>
+                        <div class="col-md-6" style="text-align:center;">
+                            <img id="face_preview2" class="img-responsive" alt="" width="200" height="200">
+                            <p style="text-align:center;">{{ resultStatus }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <style>
+        .wrapper{
+            padding-top: 20px;
+        }
+        .app-title{
+            text-align: center;
+            margin-bottom : 10px;
+        }
+    </style>
+
+    <script>
+        var upload = new Vue({
+            el: '#pills-upload',
+            data: function() {
+                return {
+                    model: {
+                        name: '',
+                        image: null,
+                        item: ''
+                    },
+                    loading: '',
+                    uploadStatus: '',
+                }
+            },
+            methods: {
+                upload: function(files) {
+                    this.model.image = files[0];
+                    this.uploadStatus = '';
+                    this.showPreview(files[0]);
+                },
+                showPreview: function(file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById("originalface").src = e.target.result;
+                    };
+                    // read the image file as a data URL.
+                    reader.readAsDataURL(file);
+                },
+                onSubmit: function() {
+                    // Assemble form data
+                    const formData = new FormData()
+                    formData.append('image', this.model.image);
+                    formData.append('name', this.model.name);
+                    this.loading = "Uploading....Please be patient."
+                    // Post to server
+                    axios.post('http://localhost:3128/upload', formData)
+                    .then(res => {
+                        // Post a status message saying the upload complete
+                        this.loading = '';
+                        this.uploadStatus = 'Image has been uploaded successfully 🤓';
+                    })
+                }
+            }
+        })
+
+        var verify = new Vue({
+            el: '#pills-verify',
+            data: function(){
+                return{
+                    model: {
+                        image : null,
+                    },
+                    loading: '',
+                    resultStatus: '',
+                    resultDetails: '',
+                }
+            },
+            methods: {
+                upload: function(files) {
+                    this.model.image = files[0];
+                    this.resultStatus = '';
+                    this.showPreview(files[0]);
+                },
+                showPreview: function(file) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById("face_preview2").src = e.target.result;
+                    };
+                    // read the image file as a data URL.
+                    reader.readAsDataURL(file);
+                },
+                onSubmit: function() {
+                    // Assemble form data
+                    const formData = new FormData()
+                    formData.append('image', this.model.image);
+                    formData.append('name', this.model.name);
+                    this.loading = "Attempting to recognize you..please wait."
+                    // Post to server
+                    axios.post('http://localhost:3128/verify', formData)
+                    .then(res => {
+                        // Post a status message saying the upload complete
+                        this.loading = '';
+                        if( !res.data.Errors){
+                            if(res.data.images[0].transaction.status != "success"){
+                                this.resultStatus = '😕 don\'t know who you are! Try uploading a picture of yourself first in upload section';
+                            }else{
+                                this.resultStatus = 'What\'s good ' + res.data.images[0].transaction.subject_id + '! 🤓';
+                            }
+                            this.resultDetails = res.data.images[0].transaction;
+                        }else{
+                            this.resultStatus = '😕 don\'t know who you are! Try uploading a picture first in upload section';
+                        }
+                    })
+                }
+            }
+        })
+    </script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>  
+</body>
+</html>
