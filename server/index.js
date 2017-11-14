@@ -11,10 +11,11 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// API Configurations for KAIROS
-let kairo_client = new Kairos('7d5eba0f', '3e151a18ef22f9d7f5edb625d9212b05');
 // Multiparty middleware
 const multipartMiddleware = multipart();
+
+// API Configurations for KAIROS
+let kairos_client = new Kairos('7d5eba0f', '3e151a18ef22f9d7f5edb625d9212b05');
 
 app.post('/upload', multipartMiddleware, function(req, res) {
     // get base64 version of image
@@ -26,10 +27,10 @@ app.post('/upload', multipartMiddleware, function(req, res) {
         gallery_name: 'rekognize',
     };
     console.log('sending to Kairos for training');
-    kairo_client.enroll(params).then(function(result) {
+    kairos_client.enroll(params).then(function(result) {
         console.log('Image Attributes : \n' + result.body );
         return res.json({'status' : true });
-    }).catch(function(err) { 
+    }).catch(function(err) {
         console.log(err);
         return res.json({'status' : false});
     });
@@ -44,7 +45,7 @@ app.post('/verify', multipartMiddleware, function(req, res) {
         gallery_name: 'rekognize',
     };
     console.log('sending to Kairos for recognition');
-    kairo_client.recognize(params).then(function(result) {
+    kairos_client.recognize(params).then(function(result) {
         console.log('Server responded with : \n' + result);
         return res.json(result.body);
     }).catch(function(err) { 

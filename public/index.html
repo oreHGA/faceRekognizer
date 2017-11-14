@@ -52,7 +52,7 @@
                     <div class="col-md-6">
                         <p style="text-align:center;">Image Preview</p>
                         <div class="col-md-6" style="text-align:center;">
-                            <img id="originalface" class="img-responsive" alt="" width="200" height="200">
+                            <img id="face_preview1" class="img-responsive" alt="" width="200" height="200">
                             <p style="text-align:center;">{{ model.name }}</p>
                         </div>
                     </div>
@@ -123,7 +123,7 @@
                 showPreview: function(file) {
                     var reader = new FileReader();
                     reader.onload = function (e) {
-                        document.getElementById("originalface").src = e.target.result;
+                        document.getElementById("face_preview1").src = e.target.result;
                     };
                     // read the image file as a data URL.
                     reader.readAsDataURL(file);
@@ -135,11 +135,15 @@
                     formData.append('name', this.model.name);
                     this.loading = "Uploading....Please be patient."
                     // Post to server
-                    axios.post('http://localhost:3128/upload', formData)
+                    axios.post('https://vuefacerec.herokuapp.com/upload', formData)
                     .then(res => {
-                        // Post a status message saying the upload complete
+                        // Post a status message
                         this.loading = '';
-                        this.uploadStatus = 'Image has been uploaded successfully 🤓';
+                        if( res.status == true){
+                            this.uploadStatus = 'Image has been uploaded successfully 🤓';
+                        }else{
+                            this.uploadStatus = 'Sorry there was an issue with the upload';
+                        }
                     })
                 }
             }
@@ -178,7 +182,7 @@
                     formData.append('name', this.model.name);
                     this.loading = "Attempting to recognize you..please wait."
                     // Post to server
-                    axios.post('http://localhost:3128/verify', formData)
+                    axios.post('https://vuefacerec.herokuapp.com/verify', formData)
                     .then(res => {
                         // Post a status message saying the upload complete
                         this.loading = '';
