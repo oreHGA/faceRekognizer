@@ -135,7 +135,7 @@
                     formData.append('name', this.model.name);
                     this.loading = "Uploading....Please be patient."
                     // Post to server
-                    axios.post('https://vuefacerec.herokuapp.com/upload', formData)
+                    axios.post('http://localhost:3128/upload', formData)
                     .then(res => {
                         // Post a status message
                         this.loading = '';
@@ -182,7 +182,7 @@
                     formData.append('name', this.model.name);
                     this.loading = "Attempting to recognize you..please wait."
                     // Post to server
-                    axios.post('https://vuefacerec.herokuapp.com/verify', formData)
+                    axios.post('http://localhost:3128/verify', formData)
                     .then(res => {
                         // Post a status message saying the upload complete
                         this.loading = '';
