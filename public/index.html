@@ -139,7 +139,7 @@
                     .then(res => {
                         // Post a status message
                         this.loading = '';
-                        if( res.status == true){
+                        if( res.data.status == true){
                             this.uploadStatus = 'Image has been uploaded successfully 🤓';
                         }else{
                             this.uploadStatus = 'Sorry there was an issue with the upload';
